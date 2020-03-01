@@ -156,4 +156,13 @@ SCENARIO("lab::Pool" , "[pool]") {
             }
         }
     }
+
+    GIVEN("a pool with an initial size of 1000") {
+        lab::Pool<int32_t> pool(1000);
+        WHEN("I check the available instances") {
+            THEN("it is at least the initial size requested") {
+                REQUIRE(pool.getAvailable() >= 1000);
+            }
+        }
+    }
 }

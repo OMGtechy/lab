@@ -17,7 +17,7 @@ namespace lab {
     class Pool final {
     public:
         // constructors (non-copy and non-move) and destructor
-        Pool();
+        Pool(const size_t initialSize = 0);
         ~Pool() = default;
 
         // non-copyable
@@ -35,6 +35,8 @@ namespace lab {
         // into potentially freed memory and undefined behaviour ensues!
         class SharedPool final {
         public:
+            SharedPool(const size_t initialSize);
+
             T* takeInstance();
             void returnInstance(T* const);
 
@@ -44,7 +46,7 @@ namespace lab {
 
         private:
             InstanceConstructor m_instanceConstructor;
-            std::queue<std::unique_ptr<T>> m_available;
+            std::vector<std::unique_ptr<T>> m_available;
             std::unordered_map<T*, std::unique_ptr<T>> m_taken;
         };
 
@@ -74,21 +76,36 @@ namespace lab {
     // constructors (non-copy and non-move) and destructor
 
     template <typename T, typename InstanceConstructor>
-    Pool<T, InstanceConstructor>::Pool() : m_sharedPool(std::make_shared<SharedPool>()) { }
+    Pool<T, InstanceConstructor>::Pool(const size_t initialSize): m_sharedPool(std::make_shared<SharedPool>(initialSize)) { }
 
     // pool operations
 
     template <typename T, typename InstanceConstructor>
-    T* Pool<T, InstanceConstructor>::SharedPool::takeInstance() {
-        if (m_available.size() < 1) {
-            m_available.push(std::unique_ptr<T>(m_instanceConstructor()));
+    Pool<T, InstanceConstructor>::SharedPool::SharedPool(const size_t initialSize) {
+        if (initialSize == 0) {
+            return;
         }
 
-        auto instance = std::move(m_available.front());
+        m_available.reserve(initialSize);
+
+        for (size_t i = 0; i < initialSize; ++i) {
+            m_available.push_back(std::unique_ptr<T>(m_instanceConstructor()));
+        }
+
+        m_taken.reserve(initialSize);
+    }
+
+    template <typename T, typename InstanceConstructor>
+    T* Pool<T, InstanceConstructor>::SharedPool::takeInstance() {
+        if (m_available.size() < 1) {
+            m_available.push_back(std::unique_ptr<T>(m_instanceConstructor()));
+        }
+
+        auto instance = std::move(m_available.back());
         const auto address = instance.get();
         assert(address != nullptr);
         m_taken[address] = std::move(instance);
-        m_available.pop();
+        m_available.pop_back();
         assert(m_available.size() != 0 ? m_available.back() != nullptr : true);
         return address;
     }
@@ -98,7 +115,7 @@ namespace lab {
         auto node = m_taken.extract(instance);
         assert(!node.empty());
         assert(node.mapped() != nullptr);
-        m_available.push(std::move(node.mapped()));
+        m_available.push_back(std::move(node.mapped()));
         assert(m_available.back() != nullptr);
     }
 
