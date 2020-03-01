@@ -84,17 +84,22 @@ namespace lab {
             m_available.push(std::unique_ptr<T>(m_instanceConstructor()));
         }
 
-        auto instance = std::move(m_available.back());
+        auto instance = std::move(m_available.front());
         const auto address = instance.get();
+        assert(address != nullptr);
         m_taken[address] = std::move(instance);
         m_available.pop();
+        assert(m_available.size() != 0 ? m_available.back() != nullptr : true);
         return address;
     }
 
     template <typename T, typename InstanceConstructor>
     void Pool<T, InstanceConstructor>::SharedPool::returnInstance(T* const instance) {
         auto node = m_taken.extract(instance);
+        assert(!node.empty());
+        assert(node.mapped() != nullptr);
         m_available.push(std::move(node.mapped()));
+        assert(m_available.back() != nullptr);
     }
 
     template <typename T, typename InstanceConstructor>
@@ -111,8 +116,6 @@ namespace lab {
     size_t Pool<T, InstanceConstructor>::SharedPool::getTaken() const noexcept {
         return m_taken.size();
     }
-
-
 
     template <typename T, typename InstanceConstructor>
     Pool<T, InstanceConstructor>::InstanceDeleter::InstanceDeleter(std::shared_ptr<SharedPool> sharedPool) : m_sharedPool(sharedPool) { }

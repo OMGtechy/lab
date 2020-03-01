@@ -4,7 +4,7 @@
 SCENARIO("lab::Pool" , "[pool]") {
     GIVEN("a pool of a POD type with no initial size") {
         struct TestPOD {
-            int m_data;
+            uintptr_t m_data;
         };
 
         lab::Pool<TestPOD> pool;
@@ -30,6 +30,19 @@ SCENARIO("lab::Pool" , "[pool]") {
             AND_WHEN("I take check the number of instances taken after the previous went out of scope") {
                 THEN("it is 0") {
                     REQUIRE(pool.getTaken() == 0);
+                }
+            }
+
+            AND_WHEN("I take and return more instances") {
+                THEN("the instances returned are valid") {
+                    for(size_t i = 0; i < 100; ++i) {
+                        auto a = pool.takeInstance();
+                        auto b = pool.takeInstance();
+                        REQUIRE(a != nullptr);
+                        REQUIRE(b != nullptr);
+                        a->m_data ^= reinterpret_cast<uintptr_t>(b.get());
+                        b->m_data ^= reinterpret_cast<uintptr_t>(a.get());
+                    }
                 }
             }
         }
