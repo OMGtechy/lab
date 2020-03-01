@@ -1,0 +1,27 @@
+language: cpp
+dist: bionic
+
+compiler:
+  - gcc
+
+before_script:
+  - mkdir build
+  - cd build
+  - mkdir Debug
+  - mkdir Release
+  - cmake ../
+  - cd Debug
+  - cmake --build ../ --config Debug -j
+  - cd ../Release
+  - cmake --build ../ --config Release -j
+  - cd ..
+
+script:
+  - ctest -j -C Debug -T test --output-on-failure
+  - ctest -j -C Release -T test --output-on-failure
+
+addons:
+  apt:
+    packages:
+      - cmake-data
+      - cmake
