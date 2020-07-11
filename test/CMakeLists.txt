@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(external/Catch2)
 include(external/Catch2/contrib/Catch.cmake)
 
-add_executable(test_lab source/test.cpp source/test_pool.cpp)
+add_executable(test_lab source/test.cpp source/test_pool.cpp source/test_region.cpp)
 target_include_directories(test_lab PRIVATE include ../include)
 target_link_libraries(test_lab lab Catch2::Catch2)
 

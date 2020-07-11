@@ -9,7 +9,7 @@ add_compile_options(-Wall -Wextra -pedantic -Werror)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined -fsanitize=address")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined -fsanitize=address")
 
-add_library(lab source/pool.cpp)
+add_library(lab source/pool.cpp source/region.cpp)
 target_include_directories(lab PRIVATE include)
 
 include(CTest)
