@@ -59,7 +59,7 @@ SCENARIO("lab::Pool" , "[pool]") {
 
             // moveable
             NonCopyableButMoveable(NonCopyableButMoveable&& other) { *this = std::move(other); }
-            NonCopyableButMoveable& operator=(NonCopyableButMoveable&& other) { other.m_movedFrom = true; }
+            NonCopyableButMoveable& operator=(NonCopyableButMoveable&& other) { other.m_movedFrom = true; return *this; }
 
             bool m_movedFrom = false;
         };
